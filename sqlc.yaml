@@ -1,0 +1,31 @@
+# version: "2"
+# sql:
+#   - engine: "postgresql"
+#     # path: "./db/sqlc"                   # This is the path on where to store the gen queries
+#     queries: "./db/query/*.sql"              # This is the path from where the query is to be taken as example
+#     schema: "./db/migration/*.sql"           # This is the path where you would find the schema
+#     gen:
+#       go:
+#         package: "db"
+#         out: "db/sqlc"
+#         sql_package: "pgx/v5"
+
+
+
+# doing from the latest version of the website below -
+#  https://docs.sqlc.dev/en/latest/tutorials/getting-started-postgresql.html
+
+
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "db/query"
+    schema: "db/migration"
+    gen:
+      go:
+        package: "db"
+        out: "db/sqlc"
+        sql_package: "database/sql"
+        emit_json_tags: true
+        emit_interface: true
+        emit_empty_slices: true
