@@ -16,17 +16,19 @@ const (
 )
 
 var testQueries *Queries
+var testDB *sql.DB
 
 // This is a special function - by convention the test main funcion is the main entry point of all unit tests inside 1 specific golang package
 
 func TestMain(m *testing.M) {
-	conn, err := sql.Open(dbDriver, dbSource)
+	var err error
+	testDB, err = sql.Open(dbDriver, dbSource)
 	// The above returns a connection object in return
 	if err != nil {
 		log.Fatal("cannot connect to the DB:", err)
 	}
 
-	testQueries = New(conn)
+	testQueries = New(testDB)
 	// Else we use the connection to create a test querie object
 
 	os.Exit(m.Run())
