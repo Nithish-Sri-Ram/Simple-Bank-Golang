@@ -26,7 +26,6 @@ type CreateAccountParams struct {
 	Currency string `json:"currency"`
 }
 
-// don't mess with the comments - they are ment to say how to generate the files - each word has it's meaning
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
 	row := q.db.QueryRowContext(ctx, createAccount, arg.Owner, arg.Balance, arg.Currency)
 	var i Account
