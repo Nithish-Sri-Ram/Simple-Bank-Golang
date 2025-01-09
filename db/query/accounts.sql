@@ -39,5 +39,13 @@ WHERE id = $1
 RETURNING *;
 
 
+-- Instead of doing get and update function seperately - we are performing one single update function  
+-- name: AddAccountBalance :one
+UPDATE accounts 
+SET balance = balance + sqlc.arg(amount)
+WHERE id = sqlc.arg(id)
+RETURNING *;
+
+
 -- name: DeleteAccount :exec
 DELETE FROM accounts WHERE id = $1;

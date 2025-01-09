@@ -16,7 +16,7 @@ func TestTransferTx(t *testing.T) {
 	fmt.Println(">> before:", account1.Balance, account2.Balance)
 
 	// To make sure the transactions don't get messed up in any way - the best approach is to run several concurrent transfer transactions
-	n := 2
+	n := 5
 	amount := int64(10)
 
 	// we are making use of channels to recive the errors and results

@@ -9,6 +9,8 @@ import (
 )
 
 type Querier interface {
+	// Instead of doing get and update function seperately - we are performing one single update function
+	AddAccountBalance(ctx context.Context, arg AddAccountBalanceParams) (Account, error)
 	// don't mess with the comments - they are ment to say how to generate the files - each word has it's meaning
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
 	CreateEntry(ctx context.Context, arg CreateEntryParams) (Entry, error)
