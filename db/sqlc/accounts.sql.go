@@ -26,6 +26,7 @@ type CreateAccountParams struct {
 	Currency string `json:"currency"`
 }
 
+// don't mess with the comments - they are ment to say how to generate the files - each word has it's meaning
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
 	row := q.db.QueryRowContext(ctx, createAccount, arg.Owner, arg.Balance, arg.Currency)
 	var i Account
@@ -55,6 +56,29 @@ WHERE id = $1 LIMIT 1
 
 func (q *Queries) GetAccount(ctx context.Context, id int64) (Account, error) {
 	row := q.db.QueryRowContext(ctx, getAccount, id)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.Owner,
+		&i.Balance,
+		&i.Currency,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getAccountForUpdate = `-- name: GetAccountForUpdate :one
+SELECT id, owner, balance, currency, created_at FROM accounts
+WHERE id = $1 LIMIT 1
+FOR NO KEY UPDATE
+`
+
+// This is to block the concurrent accecc of sinle account - when one transaction is going on - because we are using for update account - we could block the access from other account
+// To avoid deadlock - after doing the required debugging we found that - updating only changes the account balance. The account id will never be changed because it's the primary key of accounts table
+// So if i'm telling that I'm selecting this account for update - it means it's primary key won't be touched so postgres would not need to aquire the transaction lock so the dead lock can be avoided
+// so instead of just mentioning 'FOR UPDATE' we can do select FOR NO KEY UPDATE
+func (q *Queries) GetAccountForUpdate(ctx context.Context, id int64) (Account, error) {
+	row := q.db.QueryRowContext(ctx, getAccountForUpdate, id)
 	var i Account
 	err := row.Scan(
 		&i.ID,

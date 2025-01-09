@@ -14,6 +14,18 @@ INSERT INTO accounts (
 SELECT * FROM accounts
 WHERE id = $1 LIMIT 1;
 
+
+-- This is to block the concurrent accecc of sinle account - when one transaction is going on - because we are using for update account - we could block the access from other account  
+-- To avoid deadlock - after doing the required debugging we found that - updating only changes the account balance. The account id will never be changed because it's the primary key of accounts table
+-- So if i'm telling that I'm selecting this account for update - it means it's primary key won't be touched so postgres would not need to aquire the transaction lock so the dead lock can be avoided  
+-- so instead of just mentioning 'FOR UPDATE' we can do select FOR NO KEY UPDATE  
+-- name: GetAccountForUpdate :one
+SELECT * FROM accounts
+WHERE id = $1 LIMIT 1
+FOR NO KEY UPDATE;
+
+
+
 -- name: ListAccounts :many
 SELECT * FROM accounts
 ORDER BY id

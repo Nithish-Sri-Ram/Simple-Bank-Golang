@@ -15,6 +15,11 @@ type Querier interface {
 	CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error)
 	DeleteAccount(ctx context.Context, id int64) error
 	GetAccount(ctx context.Context, id int64) (Account, error)
+	// This is to block the concurrent accecc of sinle account - when one transaction is going on - because we are using for update account - we could block the access from other account
+	// To avoid deadlock - after doing the required debugging we found that - updating only changes the account balance. The account id will never be changed because it's the primary key of accounts table
+	// So if i'm telling that I'm selecting this account for update - it means it's primary key won't be touched so postgres would not need to aquire the transaction lock so the dead lock can be avoided
+	// so instead of just mentioning 'FOR UPDATE' we can do select FOR NO KEY UPDATE
+	GetAccountForUpdate(ctx context.Context, id int64) (Account, error)
 	GetEntry(ctx context.Context, id int64) (Entry, error)
 	GetTransfer(ctx context.Context, id int64) (Transfer, error)
 	ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error)

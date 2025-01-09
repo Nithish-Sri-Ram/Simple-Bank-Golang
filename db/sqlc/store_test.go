@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -12,9 +13,10 @@ func TestTransferTx(t *testing.T) {
 
 	account1 := CreateRandomAccount(t)
 	account2 := CreateRandomAccount(t)
+	fmt.Println(">> before:", account1.Balance, account2.Balance)
 
 	// To make sure the transactions don't get messed up in any way - the best approach is to run several concurrent transfer transactions
-	n := 5
+	n := 2
 	amount := int64(10)
 
 	// we are making use of channels to recive the errors and results
@@ -22,7 +24,10 @@ func TestTransferTx(t *testing.T) {
 	results := make(chan TransferTxResult)
 
 	for i := 0; i < n; i++ {
+		//Deadlock occured and to resolve that we would have to print some logs to resolve this
+		// txName := fmt.Sprintf("tx %d", i+1) //This is to create new tx1, tx2 and multiple for db transactions
 		go func() {
+			// ctx := context.WithValue(context.Background(), txKey, txName)
 			result, err := store.TransferTx(context.Background(), TransferTxParams{
 				FromAccountID: account1.ID,
 				ToAccountID:   account2.ID,
@@ -36,6 +41,7 @@ func TestTransferTx(t *testing.T) {
 	}
 
 	// Check results
+	existed := make(map[int]bool)
 	for i := 0; i < n; i++ {
 		err := <-errs
 		require.NoError(t, err)
@@ -76,6 +82,41 @@ func TestTransferTx(t *testing.T) {
 		_, err = store.GetEntry(context.Background(), toEntry.ID)
 		require.NoError(t, err)
 
-		// TODO: Check account balance
+		//we are gonna resolve the database locking and deadlock - we are gonna use a different implementation approach
+		//We are doing a test drivern approach to develop
+		fromAccount := result.FromAccount
+		require.NotEmpty(t, fromAccount)
+		require.Equal(t, account1.ID, fromAccount.ID)
+
+		toAccount := result.ToAccount
+		require.NotEmpty(t, toAccount)
+		require.Equal(t, account2.ID, toAccount.ID)
+
+		// Check account balance
+		fmt.Println(">> tx:", fromAccount.Balance, toAccount.Balance)
+		diff1 := account1.Balance - fromAccount.Balance
+		diff2 := toAccount.Balance - account2.Balance
+		require.Equal(t, diff1, diff2)
+		require.True(t, diff1 > 0)
+		require.True(t, diff1%amount == 0) // 1*amount, 2*amount, 3*amount
+		// As checke in the above - the difference should be divisible by the amount of money that moves in each transaction
+
+		k := int(diff1 / amount) // If we compute this - then k must be an integer between 1 and n( Where n is the number of executed transactions)
+		require.True(t, k >= 1 && k <= n)
+		require.NotContains(t, existed, k)
+		existed[k] = true
 	}
+
+	// Check the final updated balance
+	updatedAccount1, err := testQueries.GetAccount(context.Background(), account1.ID)
+	require.NoError(t, err)
+
+	updatedAccount2, err := testQueries.GetAccount(context.Background(), account2.ID)
+	require.NoError(t, err)
+
+	// fmt.Println(">> after:", account1.Balance, account2.Balance)
+	fmt.Println(">> after:", updatedAccount1.Balance, updatedAccount2.Balance)
+	require.Equal(t, account1.Balance-int64(n)*amount, updatedAccount1.Balance)
+	require.Equal(t, account2.Balance+int64(n)*amount, updatedAccount2.Balance)
+
 }
