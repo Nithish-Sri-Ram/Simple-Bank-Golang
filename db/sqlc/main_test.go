@@ -6,13 +6,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/Nithish-Sri-Ram/simplebank/util"
 	_ "github.com/lib/pq"
 	// we dont actually call any function which uses the above package but we need it for the db connection
-)
-
-const (
-	dbDriver = "postgres"
-	dbSource = "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable"
 )
 
 var testQueries *Queries
@@ -21,8 +17,11 @@ var testDB *sql.DB
 // This is a special function - by convention the test main funcion is the main entry point of all unit tests inside 1 specific golang package
 
 func TestMain(m *testing.M) {
-	var err error
-	testDB, err = sql.Open(dbDriver, dbSource)
+	config, err := util.LoadConfig("../..")
+	if err != nil {
+		log.Fatal("Cannot connect to db:", err)
+	}
+	testDB, err = sql.Open(config.DBDriver, config.DBSource)
 	// The above returns a connection object in return
 	if err != nil {
 		log.Fatal("cannot connect to the DB:", err)
