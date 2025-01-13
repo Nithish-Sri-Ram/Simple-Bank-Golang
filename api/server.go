@@ -23,6 +23,7 @@ func NewServer(store db.Store) *Server {
 		v.RegisterValidation("currency", validCurrency)
 	}
 
+	router.POST("/users", server.createUser)
 	router.POST("/accounts", server.createAccount) // We can pass one or multiple handler functions - if we pass multiple functions, then the last one should be the real handler and all the other functions should be middlewares
 	router.GET("/accounts/:id", server.getAccount)
 	router.GET("/accounts", server.listAccount)
