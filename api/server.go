@@ -3,6 +3,8 @@ package api
 import (
 	db "github.com/Nithish-Sri-Ram/simplebank/db/sqlc"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 // Server serves HTTP requests for our banking service/
@@ -16,9 +18,15 @@ func NewServer(store db.Store) *Server {
 	server := &Server{store: store}
 	router := gin.Default()
 
+	// Here we've registered the
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("currency", validCurrency)
+	}
+
 	router.POST("/accounts", server.createAccount) // We can pass one or multiple handler functions - if we pass multiple functions, then the last one should be the real handler and all the other functions should be middlewares
 	router.GET("/accounts/:id", server.getAccount)
 	router.GET("/accounts", server.listAccount)
+	router.POST("/transfers", server.createTransfer)
 
 	server.router = router
 	return server

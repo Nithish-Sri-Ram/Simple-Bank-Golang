@@ -11,7 +11,7 @@ import (
 type createAccountRequest struct {
 	// Gin uses a validatore package internally to perform data validation automatically under the hood
 	Owner    string `json:"owner" binding:"required"`
-	Currency string `json:"currency" binding:"required,oneof=USD EUR"`
+	Currency string `json:"currency" binding:"required,currency"`
 }
 
 // When we use gin - everything we do inside a handler will involve this context object, it provides lots of convinient methods to read input parameters and write out resposes
