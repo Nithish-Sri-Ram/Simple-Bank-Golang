@@ -14,16 +14,10 @@ import (
 // for that reason each test should create it's own account records
 
 func CreateRandomAccount(t *testing.T) Account {
-	// arg := CreateAccountParams{
-	// 	Owner:    "tom",
-	// 	Balance:  100,
-	// 	Currency: "USD",
-	// }
-
-	// Instead of manually assigning the values - we will assign random values
+	user := CreateRandomUser(t)
 
 	arg := CreateAccountParams{
-		Owner:    util.RandomOwner(),
+		Owner:    user.Username,
 		Balance:  util.RandomMoney(),
 		Currency: util.RandomCurrency(),
 	}
