@@ -46,10 +46,13 @@ func (server *Server) setupRouter() {
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)
 
-	router.POST("/accounts", server.createAccount) // We can pass one or multiple handler functions - if we pass multiple functions, then the last one should be the real handler and all the other functions should be middlewares
-	router.GET("/accounts/:id", server.getAccount)
-	router.GET("/accounts", server.listAccount)
-	router.POST("/transfers", server.createTransfer)
+	// The create user and login doesn't need any authorization - other than that all the other routes would need auth
+	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
+
+	authRoutes.POST("/accounts", server.createAccount) // We can pass one or multiple handler functions - if we pass multiple functions, then the last one should be the real handler and all the other functions should be middlewares
+	authRoutes.GET("/accounts/:id", server.getAccount)
+	authRoutes.GET("/accounts", server.listAccount)
+	authRoutes.POST("/transfers", server.createTransfer)
 
 	server.router = router
 
