@@ -3,7 +3,6 @@ package api
 import (
 	"database/sql"
 	"errors"
-	"log"
 	"net/http"
 
 	db "github.com/Nithish-Sri-Ram/simplebank/db/sqlc"
@@ -13,11 +12,9 @@ import (
 )
 
 type createAccountRequest struct {
-	// Gin uses a validatore package internally to perform data validation automatically under the hood
 	Currency string `json:"currency" binding:"required,currency"`
 }
 
-// When we use gin - everything we do inside a handler will involve this context object, it provides lots of convinient methods to read input parameters and write out resposes
 func (server *Server) createAccount(ctx *gin.Context) {
 	var req createAccountRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -40,8 +37,6 @@ func (server *Server) createAccount(ctx *gin.Context) {
 				ctx.JSON(http.StatusForbidden, errorResponse(err))
 				return
 			}
-
-			log.Println(pqErr.Code.Name())
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -87,7 +82,7 @@ type listAccountRequest struct {
 	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
 }
 
-func (server *Server) listAccount(ctx *gin.Context) {
+func (server *Server) listAccounts(ctx *gin.Context) {
 	var req listAccountRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))

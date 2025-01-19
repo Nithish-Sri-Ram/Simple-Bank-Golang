@@ -2,7 +2,6 @@ package api
 
 import (
 	"database/sql"
-	"log"
 	"net/http"
 	"time"
 
@@ -13,7 +12,6 @@ import (
 )
 
 type createUserRequest struct {
-	// Gin uses a validatore package internally to perform data validation automatically under the hood
 	Username string `json:"username" binding:"required,alphanum"`
 	Password string `json:"password" binding:"required,min=6"`
 	FullName string `json:"full_name" binding:"required"`
@@ -38,7 +36,6 @@ func newUserResponse(user db.User) userResponse {
 	}
 }
 
-// When we use gin - everything we do inside a handler will involve this context object, it provides lots of convinient methods to read input parameters and write out resposes
 func (server *Server) createUser(ctx *gin.Context) {
 	var req createUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -67,15 +64,13 @@ func (server *Server) createUser(ctx *gin.Context) {
 				ctx.JSON(http.StatusForbidden, errorResponse(err))
 				return
 			}
-
-			log.Println(pqErr.Code.Name())
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	rep := newUserResponse(user)
-	ctx.JSON(http.StatusOK, rep)
+	rsp := newUserResponse(user)
+	ctx.JSON(http.StatusOK, rsp)
 }
 
 type loginUserRequest struct {
@@ -97,7 +92,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 
 	user, err := server.store.GetUser(ctx, req.Username)
 	if err != nil {
-		if err != sql.ErrNoRows {
+		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
@@ -115,7 +110,6 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		user.Username,
 		server.config.AccessTokenDuration,
 	)
-
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
