@@ -17,6 +17,9 @@ COPY start.sh .
 COPY wait-for.sh .
 COPY db/migration ./migration
 
+# Grant executable permissions to scripts
+RUN chmod +x start.sh wait-for.sh
+
 EXPOSE 8080
 CMD [ "/app/main" ]
 ENTRYPOINT [ "/app/start.sh" ]
