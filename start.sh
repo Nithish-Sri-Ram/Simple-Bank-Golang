@@ -4,7 +4,7 @@ set -e
 
 echo "run db migration"
 source /app/app.env
-/app/migrate -path ./migration -database "postgresql://root:secret@postgres:5432/simple_bank?sslmode=disable" up
+/app/migrate -path ./migration -database "$DB_SOURCE" up
 
 echo "start the app"
 exec "$@"
