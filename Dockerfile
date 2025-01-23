@@ -17,7 +17,8 @@ COPY start.sh .
 COPY wait-for.sh .
 COPY db/migration ./migration
 
-# Grant executable permissions to scripts
+RUN sed -i 's/\r$//' app.env
+
 RUN chmod +x start.sh wait-for.sh
 
 EXPOSE 8080
